@@ -43,11 +43,14 @@ class Staff:
 
     def show_task(self) -> None:
         if len(self.__tasks) > 0:
+            task_dic = Task.get_global_list()
             for task in self.__tasks:
-                print(F"Name: {task.get_name()}")
-                print(F"Id: {task.get_task_id()}")
-                print(F"Time: {task.get_time_estimation()}")
-                print(F"Status: {Status.staus_name(task.get_status())}")
+                for key, value in task_dic.items():
+                    if value == task:
+                        print(F"Name: {key.get_name()}")
+                        print(F"Id: {key.get_task_id()}")
+                        print(F"Time: {key.get_time_estimation()}")
+                        print(F"Status: {Status.staus_name(key.get_status())}")
         else:
             print(F"No tasks assigned to {self.__last_name}.")
 
@@ -71,6 +74,7 @@ class Status(Enum):
 
 class Task:
     __global_id: int = 0
+    __global_list: dict = {}
 
     # constructor
     def __init__(self, name: str, time_estimation: float, status: int, staff: list):
@@ -79,6 +83,7 @@ class Task:
         self.__name = name
         self.__time_estimation = time_estimation
         self.__staff = staff
+        Task.__global_list[self] = Task.__global_id
 
         if status == 0 or status == 1 or status == 2:
             self.__status = status
@@ -97,6 +102,7 @@ class Task:
     def __del__(self):
         for human in self.__staff:
             human.remove_task(self.__task_id)
+        del Task.__global_list[self]
         print(F"Task {self.__task_id} has been deleted.")
 
     # setter / getter
@@ -106,7 +112,9 @@ class Task:
                 human.remove_task(self.__task_id)
                 human.add_task(new_id)
             self.__task_id = new_id
+            Task.__global_list[self] = self.__task_id
             Task.__global_id = new_id
+
         else:
             print(F"Id {new_id} is not available.")
 
@@ -160,3 +168,7 @@ class Task:
     @staticmethod
     def get_global_id() -> int:
         return Task.__global_id
+
+    @staticmethod
+    def get_global_list() -> dict:
+        return Task.__global_list
